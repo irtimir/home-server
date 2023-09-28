@@ -1,0 +1,32 @@
+- name: Deploy media-server
+  hosts: general
+  vars:
+    workdir: "/home/{{ ansible_user }}/docker/media-server/"
+  tasks:
+    - name: Create config dirs
+      become: true
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: directory
+        owner: '{{ ansible_user }}'
+      loop:
+        - '/srv/sonarr'
+        - '/srv/radarr'
+        - '/srv/jackett'
+
+    - name: Copy files
+      copy:
+        src: ../../docker/media-server/
+        dest: "{{ workdir }}"
+
+    - name: Restart containers
+      community.docker.docker_compose:
+        project_src: "{{ workdir }}"
+        build: false
+        state: present
+        remove_orphans: true
+      register: output
+
+    - name: Show results
+      ansible.builtin.debug:
+        var: output

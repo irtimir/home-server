@@ -1,0 +1,99 @@
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    devices:
+      - "/dev/dri:/dev/dri"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Moscow
+      - VERSION=docker
+    volumes:
+      - "/srv/plex/config:/config"
+      - "/srv/plex/content/Movies:/Movies"
+      - "/srv/plex/content/TVShows:/TVShows"
+      - "/srv/plex/content/HomeArchive:/HomeArchive"
+    ports:
+      - "32400:32400"
+      - "1900:1900/udp"
+      - "5353:5353/udp"
+      - "8324:8324"
+      - "32410:32410/udp"
+      - "32412:32412/udp"
+      - "32413:32413/udp"
+      - "32414:32414/udp"
+      - "32469:32469"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plex.rule=Host(`plex.example.com`)"
+      - "traefik.http.routers.plex.entrypoints=web"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
+    restart: unless-stopped
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Moscow
+      - WEBUI_PORT=8080
+    volumes:
+      - "/srv/qbittorrent/config:/config"
+      - "/srv/qbittorrent/Downloads:/downloads"
+    ports:
+      - "8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    restart: unless-stopped
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Moscow
+    volumes:
+      - "/srv/radarr/config:/config"
+      - "/srv/qbittorrent/Downloads:/downloads"
+      - "/srv/plex/content/Movies:/Movies"
+    ports:
+      - "7878:7878"
+    restart: unless-stopped
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Moscow
+    volumes:
+      - "/srv/sonarr/config:/config"
+      - "/srv/qbittorrent/Downloads:/downloads"
+      - "/srv/plex/content/TVShows:/TVShows"
+    ports:
+      - "8989:8989"
+    restart: unless-stopped
+  jackett:
+    image: linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Moscow
+    volumes:
+      - "/srv/jackett/config:/config"
+    ports:
+      - "9117:9117"
+    restart: always
+  torproxy:
+    image: dperson/torproxy:latest
+    container_name: torproxy
+    environment:
+      - USERID=1000
+      - GROUPID=1000
+      - TZ=Europe/Moscow
+    ports:
+      - "8118:8118"
+      - "9050:9050"
+    restart: unless-stopped
