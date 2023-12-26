@@ -25,6 +25,7 @@
         build: false
         state: present
         remove_orphans: true
+        pull: true
       register: output
 
     - name: Show results

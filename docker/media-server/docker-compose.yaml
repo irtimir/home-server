@@ -1,6 +1,6 @@
 services:
   plex:
-    image: lscr.io/linuxserver/plex:latest
+    image: linuxserver/plex:latest
     container_name: plex
     devices:
       - "/dev/dri:/dev/dri"
@@ -9,21 +9,25 @@ services:
       - PGID=1000
       - TZ=Europe/Moscow
       - VERSION=docker
+    network_mode: host
     volumes:
       - "/srv/plex/config:/config"
       - "/srv/plex/content/Movies:/Movies"
       - "/srv/plex/content/TVShows:/TVShows"
       - "/srv/plex/content/HomeArchive:/HomeArchive"
-    ports:
-      - "32400:32400"
-      - "1900:1900/udp"
-      - "5353:5353/udp"
-      - "8324:8324"
-      - "32410:32410/udp"
-      - "32412:32412/udp"
-      - "32413:32413/udp"
-      - "32414:32414/udp"
-      - "32469:32469"
+#    ports:
+#      - "32400:32400"
+#      - "1900:1900/udp"
+#      - "5353:5353/udp"
+#      - "8324:8324"
+#      - "32410:32410/udp"
+#      - "32412:32412/udp"
+#      - "32413:32413/udp"
+#      - "32414:32414/udp"
+#      - "32469:32469"
+#    dns:
+#      - 1.1.1.1
+#      - 8.8.8.8
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.plex.rule=Host(`plex.example.com`)"
@@ -31,7 +35,7 @@ services:
       - "traefik.http.services.plex.loadbalancer.server.port=32400"
     restart: unless-stopped
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
+    image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
     environment:
       - PUID=1000
@@ -41,13 +45,15 @@ services:
     volumes:
       - "/srv/qbittorrent/config:/config"
       - "/srv/qbittorrent/Downloads:/downloads"
+      - "/srv/plex/content/Movies:/Movies"
+      - "/srv/plex/content/TVShows:/TVShows"
     ports:
       - "8080:8080"
       - "6881:6881"
       - "6881:6881/udp"
     restart: unless-stopped
   radarr:
-    image: lscr.io/linuxserver/radarr:latest
+    image: linuxserver/radarr:latest
     container_name: radarr
     environment:
       - PUID=1000
